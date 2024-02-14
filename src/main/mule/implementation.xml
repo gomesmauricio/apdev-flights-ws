@@ -7,6 +7,29 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/american-flights-api http://www.mulesoft.org/schema/mule/american-flights-api/current/mule-american-flights-api.xsd
 http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="getAllAirlineFlights" doc:id="6c2c1abb-7e47-43aa-a4db-56319addd192" >
+		<http:listener doc:name="GET /flights" doc:id="c23e3385-6bac-4678-abe4-694c1fec9845" config-ref="HTTP_Listener_config" path=" /flights"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="1a3035cb-ee51-4d1b-bc8a-996791ee9d59" >
+			<route >
+				<flow-ref doc:name="getAmericanFlights" doc:id="67c042a1-806f-44ab-b69e-fc2f48ef639b" name="getAmericanFlights"/>
+			</route>
+			<route >
+				<flow-ref doc:name="getUnitedFlights" doc:id="9c2f26ee-9278-4cd8-8249-543c45a97d7a" name="getUnitedFlights"/>
+			</route>
+			<route >
+				<flow-ref doc:name="getDeltaFlights" doc:id="f9f984bf-3d60-42c3-b3f4-d426840d830e" name="getDeltaFlights"/>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="flatten to [Flight]" doc:id="92785877-e63a-467c-a69e-c2fedba2cedc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+flatten(payload..payload)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="f6d229af-8a2b-4e32-bf42-67e5b2375b4e" message="#[payload]"/>
+	</flow>
 	<sub-flow name="setCode" doc:id="ae3b5227-10cf-4909-9088-05114968e550" >
 		<set-variable value="#[message.attributes.queryParams.code default 'SFO']" doc:name="code" doc:id="4fac564d-5e72-4b34-adbf-b24f96657b35" variableName="code"/>
 	</sub-flow>
